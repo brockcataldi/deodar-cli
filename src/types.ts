@@ -1,5 +1,5 @@
-export enum Spot {
-	PLUGIN = 'plugin',
-	THEME = 'theme',
-	INVALID = 'invalid'
+export type EntryPoints = { scss: string[]; js: string[] }
+
+export type DeodarConfig = {
+	externals?: string[]
 }
