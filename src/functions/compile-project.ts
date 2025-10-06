@@ -1,10 +1,10 @@
-import path from "path"
+import path from 'path'
 
-import getCompilables from "./get-compilables.js"
-import getDirectories from "./get-directories.js"
-import compile from "./compile.js"
+import getCompilables from './get-compilables.js'
+import getDirectories from './get-directories.js'
+import compile from './compile.js'
 
-import { DeodarConfig } from "../types.js"
+import { DeodarConfig } from '../types.js'
 const compileProject = async (
 	cwd: string,
 	config: DeodarConfig,
@@ -36,4 +36,4 @@ const compileProject = async (
 	}
 }
 
-export default compileProject;
+export default compileProject

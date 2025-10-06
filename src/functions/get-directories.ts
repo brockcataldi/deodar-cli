@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import { promises as fs } from 'fs'
 
 const getDirectories = async (location: string) => {
 	const entries = await fs.readdir(location, { withFileTypes: true })
@@ -7,4 +7,4 @@ const getDirectories = async (location: string) => {
 		.map((entry) => entry.name)
 }
 
-export default getDirectories;
+export default getDirectories

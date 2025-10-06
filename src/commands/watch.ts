@@ -4,46 +4,44 @@ import chokidar from 'chokidar'
 import path from 'path'
 import { Stats } from 'fs'
 
+import { INVALID_PROJECT_LOCATION } from '../messages.js'
+
 import rightSpot from '../functions/right-spot.js'
 import compileProject from '../functions/compile-project.js'
 
 const ignored = (path: string, stats: Stats | undefined) => {
-    if (
-        path.includes('node_modules') ||
-        path.includes('build') ||
-        path.includes('.git')
-    ) {
-        return true
-    }
+	if (
+		path.includes('node_modules') ||
+		path.includes('build') ||
+		path.includes('.git')
+	) {
+		return true
+	}
 
-    if (!stats) {
-        return false
-    }
+	if (!stats) {
+		return false
+	}
 
-    if (stats.isDirectory()) {
-        return false
-    }
+	if (stats.isDirectory()) {
+		return false
+	}
 
-    if (path.includes('.build.')) {
-        return true
-    }
+	if (path.includes('.build.')) {
+		return true
+	}
 
-    if (!path.endsWith('.js') && !path.endsWith('.scss')) {
-        return true
-    }
+	if (!path.endsWith('.js') && !path.endsWith('.scss')) {
+		return true
+	}
 
-    return false
+	return false
 }
 
 const action = async (): Promise<void> => {
 	const [valid, cwd, config] = await rightSpot()
 
 	if (!valid) {
-		console.log(
-			chalk.redBright(
-				`You are not in the project folder, or you didn't name your plugin entry point correctly`
-			)
-		)
+		console.log(INVALID_PROJECT_LOCATION)
 		process.exit(1)
 	}
 
@@ -121,5 +119,4 @@ const watch = (): Command => {
 		.action(action)
 }
 
-
-export default watch;
+export default watch

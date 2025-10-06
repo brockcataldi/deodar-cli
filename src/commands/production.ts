@@ -1,17 +1,13 @@
 import { Command } from 'commander'
-import chalk from 'chalk'
 
 import rightSpot from '../functions/right-spot.js'
 import compileProject from '../functions/compile-project.js'
+import { INVALID_PROJECT_LOCATION } from '../messages.js'
 
 const action = async (): Promise<void> => {
 	const [valid, cwd, config] = await rightSpot()
 	if (!valid) {
-		console.log(
-			chalk.redBright(
-				`You are not in the project folder, or you didn't name your plugin entry point correctly`
-			)
-		)
+		console.log(INVALID_PROJECT_LOCATION)
 		return
 	}
 
@@ -25,4 +21,4 @@ const production = (): Command => {
 		.action(action)
 }
 
-export default production;
+export default production
