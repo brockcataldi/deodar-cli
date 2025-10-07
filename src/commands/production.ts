@@ -1,7 +1,6 @@
 import { Command } from 'commander'
 
-import initialize from '../functions/initialize.js'
-import compileProject from '../functions/compile-project.js'
+import { initialize, compileProject } from '../functions.js'
 import { INVALID_PROJECT_LOCATION } from '../messages.js'
 
 const action = async (): Promise<void> => {
@@ -14,11 +13,11 @@ const action = async (): Promise<void> => {
 	await compileProject(config.cwd, config, false)
 }
 
-const production = (): Command => {
+const productionCommand = (): Command => {
 	return new Command('production')
-		.aliases(['p', 'prod'])
+		.alias('p')
 		.description('Build a Production Build of a Deodar Project')
 		.action(action)
 }
 
-export default production
+export default productionCommand

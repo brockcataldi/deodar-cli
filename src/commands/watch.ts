@@ -1,13 +1,10 @@
 import { Command } from 'commander'
 import chalk from 'chalk'
-import chokidar from 'chokidar'
-import path from 'path'
+import chokidar, { FSWatcher } from 'chokidar'
 import { Stats } from 'fs'
 
 import { INVALID_PROJECT_LOCATION } from '../messages.js'
-
-import initialize from '../functions/initialize.js'
-import compileProject from '../functions/compile-project.js'
+import { initialize, compileProject } from '../functions.js'
 
 const ignored = (path: string, stats: Stats | undefined) => {
 	if (
@@ -37,8 +34,21 @@ const ignored = (path: string, stats: Stats | undefined) => {
 	return false
 }
 
+const onReady = async () => {
+	console.log(chalk.blueBright('Watching for changes...'))
+	console.log(chalk.gray(`Press Ctrl+C to stop\n`))
+	process.stdin.resume()
+}
+
 const onError = async (error: unknown) => {
 	console.error(chalk.redBright('Watcher error:'), error)
+}
+
+const onCleanUp = async (watcher: FSWatcher) => {
+	console.log(chalk.yellow('\n\nShutting down watcher...'))
+	await watcher.close()
+	console.log(chalk.gray('Watcher closed.'))
+	process.exit(0)
 }
 
 const action = async (): Promise<void> => {
@@ -66,54 +76,36 @@ const action = async (): Promise<void> => {
 	})
 
 	let compiling = false
-	let isReady = false
 
-	watcher.once('ready', () => {
-		isReady = true
-		console.log(chalk.blueBright('Watching for changes...'))
-		console.log(chalk.gray(`Press Ctrl+C to stop\n`))
-		process.stdin.resume()
-	})
+	watcher.once('ready', onReady)
+	watcher.on('error', onError)
+	process.on('SIGINT', () => onCleanUp(watcher))
+	process.on('SIGTERM', () => onCleanUp(watcher))
 
 	watcher.on('all', async (event, filePath) => {
-		if (!isReady || compiling) {
+		if (compiling) {
 			return
 		}
 
 		compiling = true
-		const relativePath = path.relative(config.cwd, filePath)
-
-		// console.log(chalk.yellowBright(`\n[${event}] ${relativePath}`))
 
 		try {
 			await compileProject(config.cwd, config, false)
 		} catch (err) {
 			console.error(chalk.redBright('Build failed:'), err)
-		} finally {
-			compiling = false
 		}
+
+		compiling = false
 	})
-
-	watcher.on('error', onError)
-
-	const cleanup = async () => {
-		console.log(chalk.yellow('\n\nShutting down watcher...'))
-		await watcher.close()
-		console.log(chalk.gray('Watcher closed.'))
-		process.exit(0)
-	}
-
-	process.on('SIGINT', cleanup)
-	process.on('SIGTERM', cleanup)
 
 	await new Promise(() => {})
 }
 
-const watch = (): Command => {
+const watchCommand = (): Command => {
 	return new Command('watch')
-		.aliases(['w', 'wat'])
+		.alias('w')
 		.description('Start a Watching Development Build')
 		.action(action)
 }
 
-export default watch
+export default watchCommand
