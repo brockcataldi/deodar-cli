@@ -6,7 +6,7 @@ import { Stats } from 'fs'
 
 import { INVALID_PROJECT_LOCATION } from '../messages.js'
 
-import rightSpot from '../functions/right-spot.js'
+import initialize from '../functions/initialize.js'
 import compileProject from '../functions/compile-project.js'
 
 const ignored = (path: string, stats: Stats | undefined) => {
@@ -37,20 +37,21 @@ const ignored = (path: string, stats: Stats | undefined) => {
 	return false
 }
 
-const action = async (): Promise<void> => {
-	const [valid, cwd, config] = await rightSpot()
+const onError = async (error: unknown) => {
+	console.error(chalk.redBright('Watcher error:'), error)
+}
 
-	if (!valid) {
+const action = async (): Promise<void> => {
+	const config = await initialize()
+
+	if (!config) {
 		console.log(INVALID_PROJECT_LOCATION)
 		process.exit(1)
 	}
 
-	console.log(chalk.gray('Running initial build...'))
 	try {
-		await compileProject(cwd, config, false)
-		console.log(chalk.greenBright('Initial build complete!\n'))
+		await compileProject(config.cwd, config, false)
 	} catch (err) {
-		console.error(chalk.redBright('Initial build failed:'), err)
 		process.exit(1)
 	}
 
@@ -80,14 +81,12 @@ const action = async (): Promise<void> => {
 		}
 
 		compiling = true
-		const relativePath = path.relative(cwd, filePath)
+		const relativePath = path.relative(config.cwd, filePath)
 
-		console.log(chalk.yellowBright(`\n[${event}] ${relativePath}`))
-		console.log(chalk.gray('Rebuilding...'))
+		// console.log(chalk.yellowBright(`\n[${event}] ${relativePath}`))
 
 		try {
-			await compileProject(cwd, config, false)
-			console.log(chalk.greenBright('Build complete!\n'))
+			await compileProject(config.cwd, config, false)
 		} catch (err) {
 			console.error(chalk.redBright('Build failed:'), err)
 		} finally {
@@ -95,9 +94,7 @@ const action = async (): Promise<void> => {
 		}
 	})
 
-	watcher.on('error', (error) => {
-		console.error(chalk.redBright('Watcher error:'), error)
-	})
+	watcher.on('error', onError)
 
 	const cleanup = async () => {
 		console.log(chalk.yellow('\n\nShutting down watcher...'))

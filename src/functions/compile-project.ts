@@ -5,6 +5,8 @@ import getDirectories from './get-directories.js'
 import compile from './compile.js'
 
 import { DeodarConfig } from '../types.js'
+import { BUILD_END, BUILD_START } from '../messages.js'
+
 const compileProject = async (
 	cwd: string,
 	config: DeodarConfig,
@@ -29,11 +31,15 @@ const compileProject = async (
 		}
 	}
 
-	compile(sourceEntries, '../build', config, production)
+	console.log(BUILD_START)
+
+	await compile(sourceEntries, '../build', config, production)
 
 	for (const block of blocks) {
-		compile(block, 'build', config, production)
+		await compile(block, 'build', config, production)
 	}
+
+	console.log(BUILD_END)
 }
 
 export default compileProject

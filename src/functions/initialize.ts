@@ -5,7 +5,7 @@ import getConfig from './get-config.js'
 
 import { DeodarConfig } from '../types.js'
 
-const rightSpot = async (): Promise<[boolean, string, DeodarConfig]> => {
+const initialize = async (): Promise<DeodarConfig | null> => {
 	const cwd = process.cwd()
 	const basename = path.basename(cwd)
 
@@ -20,17 +20,17 @@ const rightSpot = async (): Promise<[boolean, string, DeodarConfig]> => {
 		themeRequiredFiles.map(exists)
 	)
 
-	const deodarConfig = await getConfig(path.join(cwd, `deodar.json`))
+	const deodarConfig = await getConfig(cwd)
 
 	if (pluginExistCheck) {
-		return [true, cwd, deodarConfig]
+		return deodarConfig
 	}
 
 	if (themeExistChecks.every((i) => i === true)) {
-		return [true, cwd, deodarConfig]
+		return deodarConfig
 	}
 
-	return [false, cwd, deodarConfig]
+	return null
 }
 
-export default rightSpot
+export default initialize

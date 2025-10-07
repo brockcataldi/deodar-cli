@@ -2,17 +2,18 @@ import { Command } from 'commander'
 
 import { INVALID_PROJECT_LOCATION } from '../messages.js'
 
-import rightSpot from '../functions/right-spot.js'
+import initialize from '../functions/initialize.js'
 import compileProject from '../functions/compile-project.js'
 
 const action = async (): Promise<void> => {
-	const [valid, cwd, config] = await rightSpot()
-	if (!valid) {
+	const config = await initialize()
+
+	if (!config) {
 		console.log(INVALID_PROJECT_LOCATION)
 		return
 	}
 
-	await compileProject(cwd, config, false)
+	await compileProject(config.cwd, config, false)
 }
 
 const development = (): Command => {
