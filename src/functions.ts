@@ -268,23 +268,28 @@ export const safeBuild = async (
  * @param {string} type - Segemnt of the type of template 'block', 'plugin', or 'theme'.
  * @param {string} name - Template file name, without the .mustache.
  * @param {unknown} data - Template Data.
- * 
+ *
  * @returns {[boolean, string | unknown]} The result of write, either true and empty string or false and error.
  */
-export const writeMustache = async ( location: string, type: string, name: string, data: unknown) => {
-    try{
-        const template = await fs.readFile(
-            path.resolve(import.meta.dirname, `../templates/${type}/${name}.mustache`),
-            'utf-8'
-        )
+export const writeMustache = async (
+	location: string,
+	type: string,
+	name: string,
+	data: unknown
+) => {
+	try {
+		const template = await fs.readFile(
+			path.resolve(
+				import.meta.dirname,
+				`../templates/${type}/${name}.mustache`
+			),
+			'utf-8'
+		)
 
-        await fs.writeFile(
-            location,
-            mustache.render(template, data)
-        )
+		await fs.writeFile(location, mustache.render(template, data))
 
-        return [true, ''];
-    }catch(err){
-        return [false, err];
-    }
+		return [true, '']
+	} catch (err) {
+		return [false, err]
+	}
 }

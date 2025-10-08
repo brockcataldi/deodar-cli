@@ -28,7 +28,7 @@ const block = async (name?: string) => {
 	if (!name) {
 		name = await input({
 			message: 'What name/slug will your block have?',
-            required: true
+			required: true
 		})
 	}
 
@@ -71,26 +71,26 @@ const block = async (name?: string) => {
 		return
 	}
 
-    writeMustache(
-        path.join(newBlockDir, 'block.json'),
-        'block',
-        'block.json',
-        { title, slug, category, js }
-    );
+	writeMustache(
+		path.join(newBlockDir, 'block.json'),
+		'block',
+		'block.json',
+		{ title, slug, category, js }
+	)
 
-    writeMustache(
-        path.join(newBlockDir, `${slug}.php`),
-        'block',
-        'block.php',
-        { title, slug }
-    );
+	writeMustache(
+		path.join(newBlockDir, `${slug}.php`),
+		'block',
+		'block.php',
+		{ title, slug }
+	)
 
-    writeMustache(
-        path.join(newBlockDir, `${slug}.scss`),
-        'block',
-        'block.scss',
-        { slug }
-    );
+	writeMustache(
+		path.join(newBlockDir, `${slug}.scss`),
+		'block',
+		'block.scss',
+		{ slug }
+	)
 }
 
 const newCommand = () => {
