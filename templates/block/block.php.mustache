@@ -1,0 +1,15 @@
+<?php 
+/**
+ * {{title}} Block template.
+ *
+ * @param array $block The block settings and attributes.
+ */    
+
+    $class_name = '{{slug}}';
+    if ( ! empty( $block['className'] ) ) {
+        $class_name .= ' ' . $block['className'];
+    }
+?>
+<div class="<?php echo esc_attr( $class_name ); ?>">
+    <h1>Hello World!</div>
+</div>

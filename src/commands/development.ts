@@ -4,22 +4,20 @@ import { INVALID_PROJECT_LOCATION } from '../messages.js'
 
 import { initialize, compileProject } from '../functions.js'
 
-const action = async (): Promise<void> => {
-	const config = await initialize()
-
-	if (!config) {
-		console.log(INVALID_PROJECT_LOCATION)
-		return
-	}
-
-	await compileProject(config.cwd, config, false)
-}
-
 const developmentCommand = (): Command => {
 	return new Command('development')
 		.alias('d')
 		.description('Build a Development Build of a Deodar Project')
-		.action(action)
+		.action(async (): Promise<void> => {
+			const config = await initialize()
+
+			if (!config) {
+				console.log(INVALID_PROJECT_LOCATION)
+				return
+			}
+
+			await compileProject(config.cwd, config, false)
+		})
 }
 
 export default developmentCommand

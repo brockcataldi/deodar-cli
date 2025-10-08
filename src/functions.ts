@@ -5,6 +5,7 @@ import { build, BuildOptions } from 'esbuild'
 
 import { BUILD_END, BUILD_START, BUILD_SUCCESS } from './messages.js'
 import { EntryPoints, DeodarConfig } from './types.js'
+import mustache from 'mustache'
 
 /**
  * Compiles a set of SCSS and JS entry points using esbuild.
@@ -258,4 +259,32 @@ export const safeBuild = async (
 		if (err instanceof Error) console.error(err.message)
 		else console.error(err)
 	}
+}
+
+/**
+ * Writes a mustache template to a location
+ *
+ * @param {string} location - Where the file is being saved to.
+ * @param {string} type - Segemnt of the type of template 'block', 'plugin', or 'theme'.
+ * @param {string} name - Template file name, without the .mustache.
+ * @param {unknown} data - Template Data.
+ * 
+ * @returns {[boolean, string | unknown]} The result of write, either true and empty string or false and error.
+ */
+export const writeMustache = async ( location: string, type: string, name: string, data: unknown) => {
+    try{
+        const template = await fs.readFile(
+            path.resolve(import.meta.dirname, `../templates/${type}/${name}.mustache`),
+            'utf-8'
+        )
+
+        await fs.writeFile(
+            location,
+            mustache.render(template, data)
+        )
+
+        return [true, ''];
+    }catch(err){
+        return [false, err];
+    }
 }
