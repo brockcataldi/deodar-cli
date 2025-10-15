@@ -2,7 +2,10 @@
     "name": "acf/{{slug}}",
     "title": "{{title}}",
     "description": "A {{title}} block",
-    "style": [ "file:./build/{{slug}}.css" ],
+    "style": [ "file:./build/{{slug}}.build.css" ],
+    {{#js}}
+    "viewScript": [ "file:./build/{{slug}}.build.js", "jquery" ],
+    {{/js}}
     "category": "{{category}}",
     "icon": "admin-comments",
     "keywords": ["testimonial", "quote"],

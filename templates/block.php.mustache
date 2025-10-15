@@ -1,0 +1,28 @@
+<?php 
+/**
+ * {{title}} Block template.
+ * 
+ * The following are all available to you without calling `global`
+ * @see https://www.advancedcustomfields.com/resources/acf-blocks-key-concepts/
+ * @see https://www.advancedcustomfields.com/resources/acf-blocks-using-innerblocks-and-parent-child-relationships/
+ * 
+ * @param array $block The block settings and attributes.
+ * @param boolean $is_preview Whether or not the block is in preview.
+ * @param int $post_id The current post_id.
+ * @param array $context The context provided to the block by the post or its parent block.
+ */    
+
+    $class_name = '{{slug}}';
+    if ( ! empty( $block['className'] ) ) {
+        $class_name .= ' ' . $block['className'];
+    }
+
+    $anchor = '';
+    if ( ! empty( $block['anchor'] ) ) {
+        $anchor = 'id="' . esc_attr( $block['anchor'] ) . '" ';
+    }
+?>
+<div class="<?php echo esc_attr( $class_name ); ?>">
+    <h1 <?php echo $anchor ?>>Hello World!</div>
+    <InnerBlocks />
+</div>

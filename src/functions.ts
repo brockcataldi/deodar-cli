@@ -1,9 +1,9 @@
 import { promises as fs } from 'fs'
 import { sassPlugin } from 'esbuild-sass-plugin'
 import path from 'path'
-import { build, BuildOptions } from 'esbuild'
+import { build, BuildOptions, Plugin } from 'esbuild'
 
-import { BUILD_END, BUILD_START, BUILD_SUCCESS } from './messages.js'
+import { BUILD_END, BUILD_START, BUILD_SUCCESS, ERROR } from './messages.js'
 import { EntryPoints, DeodarConfig } from './types.js'
 import mustache from 'mustache'
 
@@ -21,7 +21,6 @@ export const compileEntryPoints = async (
 	config: DeodarConfig,
 	production: boolean
 ) => {
-	// Compile SCSS files
 	for (const styles of entryPoints.scss) {
 		const outfile = getOutFile(styles, location, '.scss', '.build.css')
 
@@ -38,8 +37,6 @@ export const compileEntryPoints = async (
 			path.relative(config.cwd, outfile)
 		)
 	}
-
-	// Compile JS files
 	for (const scripts of entryPoints.js) {
 		const outfile = getOutFile(scripts, location, '.js', '.build.js')
 
@@ -50,7 +47,18 @@ export const compileEntryPoints = async (
 				bundle: true,
 				minify: production,
 				sourcemap: !production,
-				external: config.externals ? config.externals : ['jquery'],
+				external: config.externals
+					? Object.keys(config.externals)
+					: ['jquery'],
+				plugins: [
+					globalsAliasPlugin(
+						config.externals
+							? config.externals
+							: {
+									jquery: 'jQuery'
+								}
+					)
+				],
 				format: 'iife'
 			},
 			path.relative(config.cwd, scripts),
@@ -77,7 +85,6 @@ export const compileProject = async (
 	const blocksDir = path.join(cwd, 'blocks')
 	const providers = await getDirectories(blocksDir)
 
-	// Traverse through all providers and their blocks
 	for (const provider of providers) {
 		const providerDir = path.join(blocksDir, provider)
 		const providerDirEntries = await getDirectories(providerDir)
@@ -91,14 +98,12 @@ export const compileProject = async (
 
 	console.log(BUILD_START)
 
-	// Compile root source folder
 	await compileEntryPoints(sourceEntries, '../build', config, production)
-
-	// Compile each block directory
 	for (const block of blocks) {
 		await compileEntryPoints(block, 'build', config, production)
 	}
 
+	await addIndexes(cwd, config);
 	console.log(BUILD_END)
 }
 
@@ -201,7 +206,7 @@ export const getOutFile = (
 	change: string,
 	entryType: string,
 	outType: string
-) => {
+): string => {
 	const basename = path.basename(entry)
 	const dirname = path.dirname(entry)
 	return path.resolve(
@@ -209,6 +214,42 @@ export const getOutFile = (
 		change,
 		basename.replace(entryType, outType)
 	)
+}
+
+/**
+ * esbuild plugin to pass to externals to work with the import issue.
+ *
+ * @param {{[key: string]: string}} globals - The externalized globals
+ * @returns void
+ */
+export function globalsAliasPlugin(globals: {
+	[key: string]: string
+}): Plugin {
+	return {
+		name: 'globals-alias',
+		setup(build) {
+			for (const [pkg, globalVar] of Object.entries(globals)) {
+				const namespace = `global-alias:${pkg}`
+
+				build.onResolve(
+					{ filter: new RegExp(`^${pkg}$`) },
+					() => ({
+						path: pkg,
+						namespace
+					})
+				)
+
+				build.onLoad({ filter: /.*/, namespace }, () => ({
+					contents: `
+            const globalValue = window.${globalVar};
+            export default globalValue;
+            export { globalValue };
+          `,
+					loader: 'js'
+				}))
+			}
+		}
+	}
 }
 
 /**
@@ -265,23 +306,21 @@ export const safeBuild = async (
  * Writes a mustache template to a location
  *
  * @param {string} location - Where the file is being saved to.
- * @param {string} type - Segemnt of the type of template 'block', 'plugin', or 'theme'.
  * @param {string} name - Template file name, without the .mustache.
  * @param {unknown} data - Template Data.
  *
- * @returns {[boolean, string | unknown]} The result of write, either true and empty string or false and error.
+ * @returns {Promise<[boolean, string | unknown]>} The result of write, either true and empty string or false and error.
  */
-export const writeMustache = async (
+export const writeTemplate = async (
 	location: string,
-	type: string,
 	name: string,
 	data: unknown
-) => {
+): Promise<[boolean, string | unknown]> => {
 	try {
 		const template = await fs.readFile(
 			path.resolve(
 				import.meta.dirname,
-				`../templates/${type}/${name}.mustache`
+				`../templates/${name}.mustache`
 			),
 			'utf-8'
 		)
@@ -291,5 +330,44 @@ export const writeMustache = async (
 		return [true, '']
 	} catch (err) {
 		return [false, err]
+	}
+}
+
+/**
+ * Recursively ensures every directory contains an index.php file,
+ * skipping directories based on DeodarConfig or defaults.
+ *
+ * @param {string} root - Directory to begin scanning from.
+ * @param {DeodarConfig} config - Configuration object (may include skips).
+ * @returns {Promise<void>}
+ */
+export const addIndexes = async (
+	root: string,
+	config: DeodarConfig
+): Promise<void> => {
+	const skips = new Set(
+		config.skip && Array.isArray(config.skip)
+			? config.skip
+			: []
+	)
+
+	const folderName = path.basename(root)
+	if (skips.has(folderName)) {
+		return
+	}
+
+	const indexPath = path.join(root, 'index.php')
+	if (!(await exists(indexPath))) {
+		const [ok, err] = await writeTemplate(indexPath, 'index.php', {})
+		if (!ok) {
+			console.log(ERROR(`Failed to write ${indexPath}`))
+			console.log(err);
+		}
+	}
+
+	const subdirs = await getDirectories(root)
+	for (const dir of subdirs) {
+		const child = path.join(root, dir)
+		await addIndexes(child, config)
 	}
 }

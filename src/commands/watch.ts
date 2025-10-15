@@ -82,7 +82,7 @@ const action = async (): Promise<void> => {
 	process.on('SIGINT', () => onCleanUp(watcher))
 	process.on('SIGTERM', () => onCleanUp(watcher))
 
-	watcher.on('all', async (event, filePath) => {
+	watcher.on('all', async () => {
 		if (compiling) {
 			return
 		}
