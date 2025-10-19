@@ -10,7 +10,7 @@ A powerful command-line tool for building and managing WordPress blocks with Adv
 - **Build Modes**: Development and production builds with optimization
 - **Project Bundling**: Create distributable archives of your projects
 
-## Installation *(In Process)*
+## Installation _(In Process)_
 
 ```bash
 npm install -g deodar-cli
@@ -40,12 +40,14 @@ deodar new my-awesome-block
 ```
 
 **Interactive prompts:**
+
 - Block name/slug
 - Display title
 - Category (text, media, design, widgets, theme, or custom)
 - Include JavaScript (optional)
 
 **Generated files:**
+
 - `block.json` - Block configuration
 - `block.php` - PHP template
 - `block.scss` - Stylesheet
@@ -76,6 +78,7 @@ deodar watch
 ```
 
 **Features:**
+
 - Watches `.js` and `.scss` files
 - Ignores `node_modules`, `build`, and `.git` directories
 - Automatic recompilation on file changes
@@ -90,6 +93,7 @@ deodar bundle
 ```
 
 **Features:**
+
 - Creates a ZIP file in the `dist/` directory
 - Respects `.gitignore` patterns within a `.bundleignore` file
 - Excludes development files and dependencies
@@ -123,41 +127,41 @@ Create a `deodar.config.js` file in your project root to customize the build pro
 
 ```javascript
 export default {
-  // External dependencies to exclude from bundling
-  externals: {
-    'jquery': 'jQuery',
-    'lodash': '_'
-  },
-  
-  // Files/directories to skip during bundling
-  skip: [
-    'node_modules/**',
-    'dist/**'
-  ]
+	// External dependencies to exclude from bundling
+	externals: {
+		jquery: 'jQuery',
+		lodash: '_'
+	},
+
+	// Files/directories to skip during bundling
+	skip: ['node_modules/**', 'dist/**']
 }
 ```
 
 ## Development Workflow
 
 1. **Initialize a new block:**
-   ```bash
-   deodar new my-block
-   ```
+
+    ```bash
+    deodar new my-block
+    ```
 
 2. **Start development with watch mode:**
-   ```bash
-   deodar watch
-   ```
+
+    ```bash
+    deodar watch
+    ```
 
 3. **Build for production:**
-   ```bash
-   deodar production
-   ```
+
+    ```bash
+    deodar production
+    ```
 
 4. **Create distribution package:**
-   ```bash
-   deodar bundle
-   ```
+    ```bash
+    deodar bundle
+    ```
 
 ## Build Process
 
@@ -182,6 +186,7 @@ Deodar CLI uses esbuild for fast compilation:
 ISC
 
 ## Version
+
 Current version: 2.0.0
 
 ---

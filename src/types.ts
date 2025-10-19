@@ -2,11 +2,11 @@
  * Represents the entry points for compilation, organized by file type.
  * Used to group SCSS and JavaScript files that need to be compiled.
  */
-export type EntryPoints = { 
+export type EntryPoints = {
 	/** Array of SCSS file paths to compile */
 	scss: string[]
 	/** Array of JavaScript file paths to compile */
-	js: string[] 
+	js: string[]
 }
 
 /**

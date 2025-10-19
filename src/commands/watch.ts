@@ -2,12 +2,16 @@ import { Command } from 'commander'
 import chokidar, { FSWatcher } from 'chokidar'
 import { Stats } from 'fs'
 
-import { ERROR, INVALID_PROJECT_LOCATION, NOTICE } from '../functions/messages.js'
+import {
+	ERROR,
+	INVALID_PROJECT_LOCATION,
+	NOTICE
+} from '../functions/messages.js'
 import { initialize, compileProject } from '../functions/index.js'
 
 /**
  * Determines if a file or directory should be ignored during file watching.
- * 
+ *
  * @param {string} path - The file or directory path to check
  * @param {Stats | undefined} stats - File system stats for the path
  * @returns {boolean} True if the path should be ignored, false otherwise
@@ -51,7 +55,7 @@ const onReady = async () => {
 
 /**
  * Handles errors that occur during file watching.
- * 
+ *
  * @param {unknown} error - The error that occurred
  */
 const onError = async (error: unknown) => {
@@ -62,7 +66,7 @@ const onError = async (error: unknown) => {
 /**
  * Handles cleanup when the watcher is being shut down.
  * Gracefully closes the file watcher and exits the process.
- * 
+ *
  * @param {FSWatcher} watcher - The file system watcher instance to close
  */
 const onCleanUp = async (watcher: FSWatcher) => {
@@ -74,7 +78,7 @@ const onCleanUp = async (watcher: FSWatcher) => {
 
 /**
  * Creates a watch command for real-time development builds.
- * 
+ *
  * This command starts a file watcher that monitors for changes to .js and .scss files
  * and automatically recompiles the project when changes are detected. Features include:
  * - Initial compilation on startup
@@ -82,10 +86,10 @@ const onCleanUp = async (watcher: FSWatcher) => {
  * - Graceful shutdown with Ctrl+C
  * - Error handling for build failures
  * - Prevention of concurrent compilation
- * 
+ *
  * The command validates that the user is in a valid Deodar project directory
  * before starting the watch process.
- * 
+ *
  * @returns {Command} Commander.js command instance for the 'watch' command
  */
 const watchCommand = (): Command => {

@@ -4,7 +4,11 @@ import path, { relative } from 'path'
 import archiver, { ArchiverError } from 'archiver'
 import micromatch from 'micromatch'
 
-import { ERROR, INVALID_PROJECT_LOCATION, SUCCESS } from '../functions/messages.js'
+import {
+	ERROR,
+	INVALID_PROJECT_LOCATION,
+	SUCCESS
+} from '../functions/messages.js'
 import { exists, getIgnores, initialize } from '../functions/index.js'
 
 /**
@@ -17,7 +21,7 @@ const onClose = () => {
 
 /**
  * Handles errors that occur during archive creation.
- * 
+ *
  * @param {ArchiverError} err - The archiver error that occurred
  */
 const onError = (err: ArchiverError) => {
@@ -27,16 +31,16 @@ const onError = (err: ArchiverError) => {
 
 /**
  * Creates a bundle command for packaging Deodar projects into distributable archives.
- * 
+ *
  * This command creates a ZIP archive of the current Deodar project with:
  * - High compression (level 9) for optimal file sizes
  * - Respect for .bundleignore patterns to exclude development files
  * - Automatic creation of dist directory if it doesn't exist
  * - Project name-based archive naming
- * 
+ *
  * The command validates that the user is in a valid Deodar project directory
  * before creating the archive.
- * 
+ *
  * @returns {Command} Commander.js command instance for the 'bundle' command
  */
 const bundleCommand = (): Command => {
@@ -80,12 +84,17 @@ const bundleCommand = (): Command => {
 
 				for (const entry of entries) {
 					const fullPath = path.join(location, entry.name)
-					const relativePath = path.relative(config.cwd, fullPath)
+					const relativePath = path.relative(
+						config.cwd,
+						fullPath
+					)
 
-					if(micromatch.isMatch(relativePath, ignores, {
-						dot: true
-					})){
-						continue;
+					if (
+						micromatch.isMatch(relativePath, ignores, {
+							dot: true
+						})
+					) {
+						continue
 					}
 
 					if (entry.isDirectory()) {
@@ -95,7 +104,7 @@ const bundleCommand = (): Command => {
 					}
 				}
 			}
-			
+
 			walk(config.cwd)
 			await archive.finalize()
 		})

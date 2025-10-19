@@ -92,11 +92,11 @@ export const getDirectories = async (
 
 /**
  * Reads the .bundleignore file to get patterns to ignore during bundle time.
- * 
+ *
  * This function reads a .bundleignore file from the project root and returns
  * an array of glob patterns that should be excluded from the bundle archive.
  * Lines starting with '#' are treated as comments and ignored.
- * 
+ *
  * @param {string} cwd - Project's root directory
  * @returns {Promise<string[]>} Array of ignore patterns for bundling
  */
@@ -158,16 +158,16 @@ export const writeTemplate = async (
 
 /**
  * Creates a new ACF block with all necessary files and templates.
- * 
+ *
  * This function generates a complete block structure including:
  * - block.json: Block configuration file
  * - {slug}.php: PHP template file
  * - {slug}.scss: Stylesheet file
  * - {slug}.js: JavaScript file (if js option is true)
- * 
+ *
  * All files are generated using Mustache templates with the provided options.
  * The function creates the block directory if it doesn't exist.
- * 
+ *
  * @param {string} location - Directory path where the block should be created
  * @param {CreateBlockOptions} options - Block configuration options
  * @param {string} options.title - Display title for the block
@@ -181,32 +181,47 @@ export const createBlock = async (
 	{ title, slug, category, js }: CreateBlockOptions
 ): Promise<[boolean, unknown]> => {
 	try {
-
 		await fs.mkdir(location)
 
-		writeTemplate(path.join(location, 'block.json'), 'block.json', {
-			title,
-			slug,
-			category,
-			js
-		})
+		await writeTemplate(
+			path.join(location, 'block.json'),
+			'block.json',
+			{
+				title,
+				slug,
+				category,
+				js
+			}
+		)
 
-		writeTemplate(path.join(location, `${slug}.php`), 'block.php', {
-			title,
-			slug
-		})
+		await writeTemplate(
+			path.join(location, `${slug}.php`),
+			'block.php',
+			{
+				title,
+				slug
+			}
+		)
 
-		writeTemplate(path.join(location, `${slug}.scss`), 'block.scss', {
-			slug
-		})
+		await writeTemplate(
+			path.join(location, `${slug}.scss`),
+			'block.scss',
+			{
+				slug
+			}
+		)
 
 		if (js) {
 			const pascal = pascalCase(slug)
 
-			writeTemplate(path.join(location, `${slug}.js`), 'block.js', {
-				pascal,
-				slug
-			})
+			await writeTemplate(
+				path.join(location, `${slug}.js`),
+				'block.js',
+				{
+					pascal,
+					slug
+				}
+			)
 		}
 
 		return [true, undefined]

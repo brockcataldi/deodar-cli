@@ -2,7 +2,7 @@ import chalk from 'chalk'
 
 /**
  * Creates a formatted error message with red styling and error icon.
- * 
+ *
  * @param {string} message - The error message to display
  * @returns {string} Formatted error message with styling
  */
@@ -11,7 +11,7 @@ export const ERROR = (message: string) =>
 
 /**
  * Creates a formatted success message with green styling and success icon.
- * 
+ *
  * @param {string} message - The success message to display
  * @returns {string} Formatted success message with styling
  */
@@ -20,7 +20,7 @@ export const SUCCESS = (message: string) =>
 
 /**
  * Creates a formatted notice message with cyan styling.
- * 
+ *
  * @param {string} message - The notice message to display
  * @returns {string} Formatted notice message with styling
  */
@@ -50,7 +50,7 @@ export const BUILD_END = NOTICE('Finished')
 /**
  * Creates a formatted success message for successful file compilation.
  * Shows the source file path and output file path with color coding.
- * 
+ *
  * @param {string} src - Source file path
  * @param {string} out - Output file path
  * @returns {string} Formatted build success message

@@ -4,20 +4,24 @@ import { capitalCase, kebabCase } from 'change-case'
 import path from 'path'
 
 import { createBlock, exists, initialize } from '../functions/index.js'
-import { ERROR, INVALID_PROJECT_LOCATION, SUCCESS } from '../functions/messages.js'
+import {
+	ERROR,
+	INVALID_PROJECT_LOCATION,
+	SUCCESS
+} from '../functions/messages.js'
 
 /**
  * Creates a new ACF block with interactive prompts for configuration.
- * 
+ *
  * This command guides users through creating a new WordPress block with:
  * - Block name/slug (auto-converted to kebab-case)
  * - Display title (auto-suggested from name)
  * - Category selection (text, media, design, widgets, theme, or custom)
  * - Optional JavaScript inclusion
- * 
+ *
  * The command validates that the user is in a valid Deodar project directory
  * and checks for existing blocks to prevent overwrites.
- * 
+ *
  * @returns {Command} Commander.js command instance for the 'new' command
  */
 const newCommand = () => {
