@@ -1,8 +1,8 @@
 import { Command } from 'commander'
 
-import { INVALID_PROJECT_LOCATION } from '../messages.js'
+import { INVALID_PROJECT_LOCATION } from '../functions/messages.js'
 
-import { initialize, compileProject } from '../functions.js'
+import { initialize, compileProject } from '../functions/index.js'
 
 const developmentCommand = (): Command => {
 	return new Command('development')

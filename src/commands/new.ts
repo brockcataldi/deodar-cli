@@ -1,12 +1,10 @@
 import { Command } from 'commander'
 import { input, select, confirm } from '@inquirer/prompts'
-import { capitalCase, kebabCase, pascalCase } from 'change-case'
-import { promises as fs } from 'fs'
+import { capitalCase, kebabCase } from 'change-case'
 import path from 'path'
-import chalk from 'chalk'
 
-import { exists, initialize, writeTemplate } from '../functions.js'
-import { ERROR, INVALID_PROJECT_LOCATION } from '../messages.js'
+import { createBlock, exists, initialize } from '../functions/index.js'
+import { ERROR, INVALID_PROJECT_LOCATION, SUCCESS } from '../functions/messages.js'
 
 const newCommand = () => {
 	return new Command('new')
@@ -29,14 +27,10 @@ const newCommand = () => {
 			}
 
 			const slug = kebabCase(name)
-			const newBlockDir = path.join(
-				config.cwd,
-				'blocks',
-				'acf',
-				slug
-			)
 
-			if (await exists(newBlockDir)) {
+			const location = path.join(config.cwd, 'blocks', 'acf', slug)
+
+			if (await exists(location)) {
 				console.log(ERROR(`Block ${slug} already exists.`))
 				return
 			}
@@ -72,42 +66,21 @@ const newCommand = () => {
 				})
 			}
 
-			try {
-				await fs.mkdir(newBlockDir)
+			const [result, data] = await createBlock(location, {
+				title,
+				slug,
+				category,
+				js
+			})
 
-				writeTemplate(
-					path.join(newBlockDir, 'block.json'),
-					'block.json',
-					{ title, slug, category, js }
-				)
-
-				writeTemplate(
-					path.join(newBlockDir, `${slug}.php`),
-					'block.php',
-					{ title, slug }
-				)
-
-				writeTemplate(
-					path.join(newBlockDir, `${slug}.scss`),
-					'block.scss',
-					{ slug }
-				)
-
-				if (js) {
-					const pascal = pascalCase(slug)
-
-					writeTemplate(
-						path.join(newBlockDir, `${slug}.js`),
-						'block.js',
-						{ pascal, slug }
-					)
-				}
-			} catch (err) {
-				console.log(
-					chalk.redBright('Error creating the block', err)
-				)
-				return
+			if (result) {
+				console.log(SUCCESS(`${slug} was created.`))
+			} else {
+				console.log(ERROR(`Error creating ${slug}`))
+				console.log(data)
 			}
+
+			process.exit(0)
 		})
 }
 

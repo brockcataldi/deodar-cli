@@ -1,7 +1,7 @@
 import { Command } from 'commander'
 
-import { initialize, compileProject } from '../functions.js'
-import { INVALID_PROJECT_LOCATION } from '../messages.js'
+import { initialize, compileProject } from '../functions/index.js'
+import { INVALID_PROJECT_LOCATION } from '../functions/messages.js'
 
 const productionCommand = (): Command => {
 	return new Command('production')

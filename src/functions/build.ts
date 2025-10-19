@@ -1,11 +1,20 @@
-import { promises as fs } from 'fs'
 import { sassPlugin } from 'esbuild-sass-plugin'
 import path from 'path'
 import { build, BuildOptions, Plugin } from 'esbuild'
 
-import { BUILD_END, BUILD_START, BUILD_SUCCESS, ERROR } from './messages.js'
-import { EntryPoints, DeodarConfig } from './types.js'
-import mustache from 'mustache'
+import { EntryPoints, DeodarConfig } from '../types.js'
+import {
+	BUILD_END,
+	BUILD_START,
+	BUILD_SUCCESS,
+	ERROR
+} from './messages.js'
+import {
+	exists,
+	getCompilables,
+	getDirectories,
+	writeTemplate
+} from './file-system.js'
 
 /**
  * Compiles a set of SCSS and JS entry points using esbuild.
@@ -103,117 +112,8 @@ export const compileProject = async (
 		await compileEntryPoints(block, 'build', config, production)
 	}
 
-	await addIndexes(cwd, config);
+	await addIndexes(cwd, config)
 	console.log(BUILD_END)
-}
-
-/**
- * Checks whether a file or directory exists.
- *
- * @param {string} file - Path to file or directory.
- * @returns {Promise<boolean>} True if exists, false otherwise.
- */
-export const exists = async (file: string): Promise<boolean> => {
-	try {
-		await fs.access(file)
-		return true
-	} catch {
-		return false
-	}
-}
-
-/**
- * Retrieves files within a directory that can be compiled (.scss, .js).
- *
- * @param {string} location - Directory to search for compilable files.
- * @returns {Promise<EntryPoints>} Structure containing `scss` and `js` arrays.
- */
-export const getCompilables = async (
-	location: string
-): Promise<EntryPoints> => {
-	const result: EntryPoints = { scss: [], js: [] }
-	try {
-		const entries = await fs.readdir(location, { withFileTypes: true })
-
-		for (const entry of entries) {
-			if (!entry.isFile()) {
-				continue
-			}
-
-			const ext = path.extname(entry.name)
-			if (ext === '.scss') {
-				result.scss.push(path.join(location, entry.name))
-			}
-
-			if (ext === '.js') {
-				result.js.push(path.join(location, entry.name))
-			}
-		}
-		return result
-	} catch (err) {
-		return result
-	}
-}
-
-/**
- * Loads and validates a `deodar.json` configuration file from the project.
- *
- * @param {string} cwd - Project's root directory.
- * @returns {Promise<DeodarConfig>} A valid configuration object.
- */
-export const getConfig = async (cwd: string): Promise<DeodarConfig> => {
-	const location = path.join(cwd, `deodar.json`)
-
-	if (!(await exists(location))) {
-		return { cwd }
-	}
-
-	try {
-		const data = await fs.readFile(location, 'utf-8')
-		const parsed = JSON.parse(data) as DeodarConfig
-		return { ...parsed, cwd }
-	} catch {
-		return { cwd }
-	}
-}
-
-/**
- * Returns all directories within a given path.
- *
- * @param {string} location - Directory path to scan.
- * @returns {Promise<string[]>} List of directory names.
- */
-export const getDirectories = async (
-	location: string
-): Promise<string[]> => {
-	const entries = await fs.readdir(location, { withFileTypes: true })
-	return entries
-		.filter((entry) => entry.isDirectory())
-		.map((entry) => entry.name)
-}
-
-/**
- * Computes the output file path for a given entry file.
- *
- * @param {string} entry - Full path to source file.
- * @param {string} change - Relative directory to place compiled file in.
- * @param {string} entryType - Original file extension (e.g. `.scss`).
- * @param {string} outType - New output file extension (e.g. `.build.css`).
- * @returns {string} The resolved output file path.
- */
-export const getOutFile = (
-	entry: string,
-	change: string,
-	entryType: string,
-	outType: string
-): string => {
-	const basename = path.basename(entry)
-	const dirname = path.dirname(entry)
-	return path.resolve(
-		dirname,
-		change,
-		basename.replace(entryType, outType)
-	)
 }
 
 /**
@@ -253,35 +153,6 @@ export function globalsAliasPlugin(globals: {
 }
 
 /**
- * Initializes and validates a Deodar-compatible environment.
- * Detects whether the current working directory is a plugin or a theme.
- *
- * @returns {Promise<DeodarConfig | null>} Valid configuration if Deodar-compatible, otherwise null.
- */
-export const initialize = async (): Promise<DeodarConfig | null> => {
-	const cwd = process.cwd()
-	const basename = path.basename(cwd)
-
-	const pluginEntryPoint = path.join(cwd, `${basename}.php`)
-	const themeRequiredFiles = [
-		path.join(cwd, `functions.php`),
-		path.join(cwd, `style.css`)
-	]
-
-	const pluginExistCheck = await exists(pluginEntryPoint)
-	const themeExistChecks = await Promise.all(
-		themeRequiredFiles.map(exists)
-	)
-	const deodarConfig = await getConfig(cwd)
-
-	// Determine if project is a plugin or theme
-	if (pluginExistCheck) return deodarConfig
-	if (themeExistChecks.every((exists) => exists)) return deodarConfig
-
-	return null
-}
-
-/**
  * Runs a safe build using esbuild, reporting success or failure.
  *
  * @param {BuildOptions} options - esbuild configuration options.
@@ -297,40 +168,34 @@ export const safeBuild = async (
 		await build(options)
 		console.log(BUILD_SUCCESS(srcRel, outRel))
 	} catch (err) {
+		console.log(ERROR(`Couldn't build ${srcRel}`))
 		if (err instanceof Error) console.error(err.message)
 		else console.error(err)
 	}
 }
 
 /**
- * Writes a mustache template to a location
+ * Computes the output file path for a given entry file.
  *
- * @param {string} location - Where the file is being saved to.
- * @param {string} name - Template file name, without the .mustache.
- * @param {unknown} data - Template Data.
- *
- * @returns {Promise<[boolean, string | unknown]>} The result of write, either true and empty string or false and error.
+ * @param {string} entry - Full path to source file.
+ * @param {string} change - Relative directory to place compiled file in.
+ * @param {string} entryType - Original file extension (e.g. `.scss`).
+ * @param {string} outType - New output file extension (e.g. `.build.css`).
+ * @returns {string} The resolved output file path.
  */
-export const writeTemplate = async (
-	location: string,
-	name: string,
-	data: unknown
-): Promise<[boolean, string | unknown]> => {
-	try {
-		const template = await fs.readFile(
-			path.resolve(
-				import.meta.dirname,
-				`../templates/${name}.mustache`
-			),
-			'utf-8'
-		)
-
-		await fs.writeFile(location, mustache.render(template, data))
-
-		return [true, '']
-	} catch (err) {
-		return [false, err]
-	}
+export const getOutFile = (
+	entry: string,
+	change: string,
+	entryType: string,
+	outType: string
+): string => {
+	const basename = path.basename(entry)
+	const dirname = path.dirname(entry)
+	return path.resolve(
+		dirname,
+		change,
+		basename.replace(entryType, outType)
+	)
 }
 
 /**
@@ -346,9 +211,7 @@ export const addIndexes = async (
 	config: DeodarConfig
 ): Promise<void> => {
 	const skips = new Set(
-		config.skip && Array.isArray(config.skip)
-			? config.skip
-			: []
+		config.skip && Array.isArray(config.skip) ? config.skip : []
 	)
 
 	const folderName = path.basename(root)
@@ -361,7 +224,7 @@ export const addIndexes = async (
 		const [ok, err] = await writeTemplate(indexPath, 'index.php', {})
 		if (!ok) {
 			console.log(ERROR(`Failed to write ${indexPath}`))
-			console.log(err);
+			console.log(err)
 		}
 	}
 

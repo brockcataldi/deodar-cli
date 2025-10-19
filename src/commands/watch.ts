@@ -1,10 +1,9 @@
 import { Command } from 'commander'
-import chalk from 'chalk'
 import chokidar, { FSWatcher } from 'chokidar'
 import { Stats } from 'fs'
 
-import { INVALID_PROJECT_LOCATION } from '../messages.js'
-import { initialize, compileProject } from '../functions.js'
+import { ERROR, INVALID_PROJECT_LOCATION, NOTICE } from '../functions/messages.js'
+import { initialize, compileProject } from '../functions/index.js'
 
 const ignored = (path: string, stats: Stats | undefined) => {
 	if (
@@ -35,77 +34,76 @@ const ignored = (path: string, stats: Stats | undefined) => {
 }
 
 const onReady = async () => {
-	console.log(chalk.blueBright('Watching for changes...'))
-	console.log(chalk.gray(`Press Ctrl+C to stop\n`))
+	console.log(NOTICE('Watching for changes. Press Ctrl+C to stop\n'))
 	process.stdin.resume()
 }
 
 const onError = async (error: unknown) => {
-	console.error(chalk.redBright('Watcher error:'), error)
+	console.log(ERROR('Watcher error:'))
+	console.log(error)
 }
 
 const onCleanUp = async (watcher: FSWatcher) => {
-	console.log(chalk.yellow('\n\nShutting down watcher...'))
+	console.log(NOTICE('\n\nShutting down watcher...'))
 	await watcher.close()
-	console.log(chalk.gray('Watcher closed.'))
+	console.log(NOTICE('\n\nWatcher closed.'))
 	process.exit(0)
-}
-
-const action = async (): Promise<void> => {
-	const config = await initialize()
-
-	if (!config) {
-		console.log(INVALID_PROJECT_LOCATION)
-		process.exit(1)
-	}
-
-	try {
-		await compileProject(config.cwd, config, false)
-	} catch (err) {
-		process.exit(1)
-	}
-
-	const watcher = chokidar.watch('.', {
-		ignoreInitial: true,
-		ignored,
-		persistent: true,
-		awaitWriteFinish: {
-			stabilityThreshold: 100,
-			pollInterval: 100
-		}
-	})
-
-	let compiling = false
-
-	watcher.once('ready', onReady)
-	watcher.on('error', onError)
-	process.on('SIGINT', () => onCleanUp(watcher))
-	process.on('SIGTERM', () => onCleanUp(watcher))
-
-	watcher.on('all', async () => {
-		if (compiling) {
-			return
-		}
-
-		compiling = true
-
-		try {
-			await compileProject(config.cwd, config, false)
-		} catch (err) {
-			console.error(chalk.redBright('Build failed:'), err)
-		}
-
-		compiling = false
-	})
-
-	await new Promise(() => {})
 }
 
 const watchCommand = (): Command => {
 	return new Command('watch')
 		.alias('w')
 		.description('Start a Watching Development Build')
-		.action(action)
+		.action(async () => {
+			const config = await initialize()
+
+			if (!config) {
+				console.log(INVALID_PROJECT_LOCATION)
+				process.exit(1)
+			}
+
+			try {
+				await compileProject(config.cwd, config, false)
+			} catch (err) {
+				process.exit(1)
+			}
+
+			const watcher = chokidar.watch('.', {
+				ignoreInitial: true,
+				ignored,
+				persistent: true,
+				awaitWriteFinish: {
+					stabilityThreshold: 100,
+					pollInterval: 100
+				}
+			})
+
+			let compiling = false
+
+			watcher.once('ready', onReady)
+			watcher.on('error', onError)
+			process.on('SIGINT', () => onCleanUp(watcher))
+			process.on('SIGTERM', () => onCleanUp(watcher))
+
+			watcher.on('all', async () => {
+				if (compiling) {
+					return
+				}
+
+				compiling = true
+
+				try {
+					await compileProject(config.cwd, config, false)
+				} catch (err) {
+					console.log(ERROR('Build failed:'))
+					console.log(err)
+				}
+
+				compiling = false
+			})
+
+			await new Promise(() => {})
+		})
 }
 
 export default watchCommand
