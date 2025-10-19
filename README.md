@@ -91,7 +91,7 @@ deodar bundle
 
 **Features:**
 - Creates a ZIP file in the `dist/` directory
-- Respects `.gitignore` patterns
+- Respects `.gitignore` patterns within a `.bundleignore` file
 - Excludes development files and dependencies
 - High compression (level 9)
 

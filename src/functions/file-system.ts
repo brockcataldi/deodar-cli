@@ -91,10 +91,14 @@ export const getDirectories = async (
 }
 
 /**
- * Reads the .bundleignore file to ignore during bundle time.
- *
- * @param {string} cwd - Project's root directory.
- * @returns
+ * Reads the .bundleignore file to get patterns to ignore during bundle time.
+ * 
+ * This function reads a .bundleignore file from the project root and returns
+ * an array of glob patterns that should be excluded from the bundle archive.
+ * Lines starting with '#' are treated as comments and ignored.
+ * 
+ * @param {string} cwd - Project's root directory
+ * @returns {Promise<string[]>} Array of ignore patterns for bundling
  */
 export const getIgnores = async (cwd: string): Promise<string[]> => {
 	const ignorePath = path.join(cwd, '.bundleignore')
@@ -103,16 +107,19 @@ export const getIgnores = async (cwd: string): Promise<string[]> => {
 
 	if (await exists(ignorePath)) {
 		const content = await fs.readFile(ignorePath, 'utf-8')
-		const lines = content.split('\n')
 
-		for (const rawLine of lines) {
-			const line = rawLine.trim()
+		for (const line of content.split('\n')) {
+			const trimmed = line.trim()
+			if (trimmed.startsWith('#')) {
+				continue
+			}
+
+			if (trimmed === '') {
+				continue
+			}
+
+			ignorePatterns.push(trimmed)
 		}
-
-		ignorePatterns = content
-			.split('\n')
-			.map((line) => line.trim())
-			.filter((line) => line && !line.startsWith('#'))
 	}
 
 	return ignorePatterns
@@ -150,10 +157,24 @@ export const writeTemplate = async (
 }
 
 /**
- *
- * @param location
- * @param options
- * @returns
+ * Creates a new ACF block with all necessary files and templates.
+ * 
+ * This function generates a complete block structure including:
+ * - block.json: Block configuration file
+ * - {slug}.php: PHP template file
+ * - {slug}.scss: Stylesheet file
+ * - {slug}.js: JavaScript file (if js option is true)
+ * 
+ * All files are generated using Mustache templates with the provided options.
+ * The function creates the block directory if it doesn't exist.
+ * 
+ * @param {string} location - Directory path where the block should be created
+ * @param {CreateBlockOptions} options - Block configuration options
+ * @param {string} options.title - Display title for the block
+ * @param {string} options.slug - URL-friendly slug for the block
+ * @param {string} options.category - Block category (text, media, design, etc.)
+ * @param {boolean} options.js - Whether to include JavaScript file
+ * @returns {Promise<[boolean, unknown]>} Tuple of [success, error] where success is boolean and error is the error object if failed
  */
 export const createBlock = async (
 	location: string,

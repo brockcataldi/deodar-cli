@@ -11,7 +11,11 @@
 		"watch": "tsc --watch",
 		"dev": "ts-node src/index.ts",
 		"lint": "npx eslint src/",
-		"format": "npx prettier . --write"
+		"format": "npx prettier . --write",
+		"test": "vitest",
+		"test:run": "vitest run",
+		"test:coverage": "vitest run --coverage",
+		"test:ui": "vitest --ui"
 	},
 	"keywords": [],
 	"author": "",
@@ -37,12 +41,15 @@
 		"@eslint/js": "^9.36.0",
 		"@types/mustache": "^4.2.6",
 		"@types/node": "^24.6.1",
+		"@vitest/coverage-v8": "^2.1.8",
+		"@vitest/ui": "^2.1.8",
 		"eslint": "^9.36.0",
 		"eslint-config-prettier": "^10.1.8",
 		"globals": "^16.4.0",
 		"prettier": "3.6.2",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.45.0"
+		"typescript-eslint": "^8.45.0",
+		"vitest": "^2.1.8"
 	}
 }
