@@ -1,6 +1,6 @@
 {
 	"name": "deodar-cli",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"description": "A powerful CLI tool for building and managing WordPress blocks with Advanced Custom Fields (ACF)",
 	"main": "./dist/index.js",
 	"bin": {
@@ -37,7 +37,7 @@
 		"esbuild"
 	],
 	"author": "Brock Cataldi",
-	"license": "MIT",
+	"license": "GPL-2.0-or-later",
 	"engines": {
 		"node": ">=18.0.0"
 	},

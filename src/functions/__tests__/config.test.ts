@@ -92,7 +92,6 @@ describe('config', () => {
 		})
 
 		it('should return null for incomplete plugin project', async () => {
-			const basename = path.basename(tempDir)
 			const wrongPluginFile = path.join(tempDir, 'wrong-name.php')
 
 			await fs.writeFile(

@@ -49,6 +49,8 @@ export const getCompilables = async (
 		}
 		return result
 	} catch (err) {
+		// Log error but return empty result to allow graceful degradation
+		console.warn(`Warning: Failed to read directory ${location}:`, err instanceof Error ? err.message : err)
 		return result
 	}
 }
@@ -103,7 +105,7 @@ export const getDirectories = async (
 export const getIgnores = async (cwd: string): Promise<string[]> => {
 	const ignorePath = path.join(cwd, '.bundleignore')
 
-	let ignorePatterns: string[] = []
+	const ignorePatterns: string[] = []
 
 	if (await exists(ignorePath)) {
 		const content = await fs.readFile(ignorePath, 'utf-8')

@@ -183,7 +183,7 @@ Deodar CLI uses esbuild for fast compilation:
 
 ## License
 
-ISC
+MIT
 
 ## Version
 

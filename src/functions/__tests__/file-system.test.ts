@@ -13,7 +13,6 @@ import {
 import {
 	createTempDir,
 	createTempFile,
-	createMockProject,
 	cleanupTempDir
 } from '../../test-utils/index.js'
 
@@ -266,7 +265,7 @@ describe('file-system', () => {
 				js: false
 			}
 
-			const [success, error] = await createBlock(blockDir, options)
+			const [success] = await createBlock(blockDir, options)
 
 			expect(success).toBe(true)
 			expect(

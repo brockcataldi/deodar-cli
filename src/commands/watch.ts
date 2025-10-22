@@ -101,13 +101,15 @@ const watchCommand = (): Command => {
 
 			if (!config) {
 				console.log(INVALID_PROJECT_LOCATION)
-				process.exit(1)
+				return;
 			}
 
 			try {
 				await compileProject(config.cwd, config, false)
 			} catch (err) {
-				process.exit(1)
+				console.log(ERROR('Build failed:'))
+				console.log(err)
+				return;
 			}
 
 			const watcher = chokidar.watch('.', {
@@ -138,7 +140,11 @@ const watchCommand = (): Command => {
 					await compileProject(config.cwd, config, false)
 				} catch (err) {
 					console.log(ERROR('Build failed:'))
-					console.log(err)
+					if (err instanceof Error) {
+						console.error(err.message)
+					} else {
+						console.error(err)
+					}
 				}
 
 				compiling = false

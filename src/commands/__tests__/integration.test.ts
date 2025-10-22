@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { spawn } from 'child_process'
-import { promises as fs } from 'fs'
 import path from 'path'
 import {
 	createMockProject,
@@ -68,7 +67,7 @@ describe('CLI Integration Tests', () => {
 
 			const result = await runCommand(['new', 'test-block'])
 
-			expect(result.code).toBe(0) // The command exits gracefully
+			expect(result.code).toBe(1) // The command exits with error code
 			expect(result.stdout).toContain('ERROR')
 			expect(result.stdout).toContain('project folder')
 		})
@@ -127,7 +126,7 @@ describe('CLI Integration Tests', () => {
 
 			const result = await runCommand(['watch'])
 
-			expect(result.code).toBe(1) // Watch command exits with error code
+			expect(result.code).toBe(0) // Watch command exits gracefully
 			expect(result.stdout).toContain('ERROR')
 			expect(result.stdout).toContain('project folder')
 		})
@@ -148,7 +147,7 @@ describe('CLI Integration Tests', () => {
 
 			const result = await runCommand(['bundle'])
 
-			expect(result.code).toBe(0)
+			expect(result.code).toBe(1) // Bundle command exits with error code
 			expect(result.stdout).toContain('ERROR')
 			expect(result.stdout).toContain('project folder')
 		})

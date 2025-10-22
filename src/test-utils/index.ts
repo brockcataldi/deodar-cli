@@ -178,12 +178,12 @@ export const captureConsole = async (
 	let stdout = ''
 	let stderr = ''
 
-	process.stdout.write = (chunk: any) => {
+	process.stdout.write = (chunk: string | Buffer | Uint8Array) => {
 		stdout += chunk.toString()
 		return true
 	}
 
-	process.stderr.write = (chunk: any) => {
+	process.stderr.write = (chunk: string | Buffer | Uint8Array) => {
 		stderr += chunk.toString()
 		return true
 	}

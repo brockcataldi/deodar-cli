@@ -24,18 +24,19 @@ import {
  *
  * @returns {Command} Commander.js command instance for the 'new' command
  */
-const newCommand = () => {
+const newCommand = (): Command => {
 	return new Command('new')
 		.alias('n')
 		.argument('[name]', 'name of the block')
 		.description('Create a new block')
 		.action(async (name?: string) => {
-			const config = await initialize()
+			try {
+				const config = await initialize()
 
-			if (!config) {
-				console.log(INVALID_PROJECT_LOCATION)
-				process.exit(0)
-			}
+				if (!config) {
+					console.log(INVALID_PROJECT_LOCATION)
+					process.exit(1)
+				}
 
 			if (!name) {
 				name = await input({
@@ -50,16 +51,16 @@ const newCommand = () => {
 
 			if (await exists(location)) {
 				console.log(ERROR(`Block ${slug} already exists.`))
-				return
+				process.exit(1)
 			}
 
-			let title = await input({
+			const title = await input({
 				message: 'What display label will your block have?',
 				required: true,
 				default: capitalCase(name)
 			})
 
-			let js = await confirm({
+			const js = await confirm({
 				message: 'Do you want JS included?',
 				default: false
 			})
@@ -93,12 +94,21 @@ const newCommand = () => {
 
 			if (result) {
 				console.log(SUCCESS(`${slug} was created.`))
+				process.exit(0)
 			} else {
 				console.log(ERROR(`Error creating ${slug}`))
 				console.log(data)
+				process.exit(1)
 			}
-
-			process.exit(0)
+			} catch (error) {
+				console.log(ERROR('Failed to create block'))
+				if (error instanceof Error) {
+					console.error(error.message)
+				} else {
+					console.error(error)
+				}
+				process.exit(1)
+			}
 		})
 }
 

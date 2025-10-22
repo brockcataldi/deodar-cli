@@ -66,7 +66,7 @@ describe('performance tests', () => {
       )
       
       // Create JS with some complexity
-      let js = `class Block${i} {\n  constructor() {\n    this.init();\n  }\n\n  init() {\n    console.log('Block ${i} initialized');\n  }\n}\n\nnew Block${i}();`
+      const js = `class Block${i} {\n  constructor() {\n    this.init();\n  }\n\n  init() {\n    console.log('Block ${i} initialized');\n  }\n}\n\nnew Block${i}();`
       
       await fs.writeFile(
         path.join(blockDir, `block-${i}.js`),
@@ -231,8 +231,6 @@ describe('performance tests', () => {
 
   it('should handle concurrent compilation efficiently', async () => {
     // Create multiple blocks that will be compiled concurrently
-    const blockPromises = []
-    
     for (let i = 1; i <= 10; i++) {
       const blockDir = path.join(projectDir, 'blocks', 'acf', `concurrent-block-${i}`)
       await fs.mkdir(blockDir, { recursive: true })
