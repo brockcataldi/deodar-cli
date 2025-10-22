@@ -105,38 +105,70 @@ A typical Deodar project structure looks like this:
 
 ```
 your-project/
-├── blocks/
-│   └── acf/
-│       └── your-block/
-│           ├── block.json
-│           ├── block.php
-│           ├── block.scss
-│           ├── block.js (optional)
-│           └── build/
-│               ├── your-block.build.css
-│               └── your-block.build.js
-├── dist/
+├── blocks/                          # Block definitions directory
+│   ├── acf/                        # ACF provider blocks
+│   │   └── your-block/             # Individual block directory
+│   │       ├── block.json          # Block configuration
+│   │       ├── block.php           # PHP template
+│   │       ├── block.scss          # Stylesheet source
+│   │       ├── block.js            # JavaScript source (optional)
+│   │       └── build/              # Compiled assets (auto-generated)
+│   │           ├── your-block.build.css
+│   │           └── your-block.build.js
+│   └── core/                       # Core provider blocks
+│       └── paragraph/              # Individual block directory
+│           ├── paragraph.scss      # Stylesheet source
+│           ├── paragraph.js        # JavaScript source (optional)
+│           └── build/              # Compiled assets (auto-generated)
+│               ├── paragraph.build.css
+│               └── paragraph.build.js
+├── source/                         # Global source files (optional)
+│   ├── styles.scss                 # Global styles
+│   └── scripts.js                  # Global scripts
+├── build/                          # Global compiled assets (auto-generated)
+│   ├── styles.build.css
+│   └── scripts.build.js
+├── dist/                           # Distribution packages
 │   └── your-project.zip
-├── deodar.config.js (optional)
-└── your-main-file.php
+├── deodar.json                     # Deodar configuration (optional)
+├── .bundleignore                   # Bundle exclusion patterns (optional)
+├── your-main-file.php              # Main plugin/theme file
+└── index.php                       # Security files (auto-generated)
 ```
+
+### Key Directories:
+
+- **`blocks/`**: Contains all block definitions organized by provider (e.g., `acf/`, `core/`)
+- **`blocks/{provider}/`**: Provider-specific block directories (e.g., ACF blocks, Core blocks)
+- **`source/`**: Global source files that apply to the entire project
+- **`build/`**: Auto-generated compiled assets (CSS/JS from source files)
+- **`dist/`**: Distribution packages created by the `bundle` command
+- **`blocks/*/build/`**: Auto-generated compiled assets for individual blocks
+
+### Auto-Generated Files:
+
+- **`build/` directories**: Created during compilation
+- **`index.php` files**: Security files added to prevent direct access
+- **`.build.css` and `.build.js` files**: Compiled from source files
 
 ## Configuration
 
-Create a `deodar.config.js` file in your project root to customize the build process:
+Create a `deodar.json` file in your project root to customize the build process:
 
-```javascript
-export default {
-	// External dependencies to exclude from bundling
-	externals: {
-		jquery: 'jQuery',
-		lodash: '_'
+```json
+{
+	"externals": {
+		"jquery": "jQuery",
+		"lodash": "_"
 	},
-
-	// Files/directories to skip during bundling
-	skip: ['node_modules/**', 'dist/**']
+	"skip": ["node_modules/**", "dist/**"]
 }
 ```
+
+### Configuration Options:
+
+- **`externals`**: External dependencies to exclude from bundling (key: package name, value: global variable)
+- **`skip`**: File patterns to skip during compilation and bundling
 
 ## Development Workflow
 
