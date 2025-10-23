@@ -14,9 +14,9 @@ export type EntryPoints = {
  * Defines how the build process should handle external dependencies and file exclusions.
  */
 export type DeodarConfig = {
-	/** External dependencies to exclude from bundling (e.g., 'jquery': 'jQuery') */
+	/** External dependencies to exclude from compiling (e.g., 'jquery': 'jQuery') */
 	externals?: Record<string, string>
-	/** File patterns to skip during compilation or bundling */
+	/** File patterns to skip during compilation */
 	skip?: string[]
 	/** Current working directory of the project */
 	cwd: string
