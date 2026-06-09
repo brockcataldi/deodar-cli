@@ -38,7 +38,7 @@ export const compileEntryPoints = async (
 				entryPoints: [styles],
 				outfile,
 				bundle: true,
-				plugins: [sassPlugin()],
+				plugins: [sassPlugin(), rootRelativeUrlPlugin()],
 				minify: production,
 				sourcemap: !production
 			},
@@ -114,6 +114,30 @@ export const compileProject = async (
 
 	await addIndexes(cwd, config)
 	console.log(BUILD_END)
+}
+
+/**
+ * esbuild plugin that treats root-relative url() paths as external.
+ *
+ * esbuild resolves url(/path) as an absolute filesystem path, but in CSS these
+ * are site-root URLs (e.g. /wp-content/themes/...) and should be left as-is.
+ */
+export function rootRelativeUrlPlugin(): Plugin {
+	return {
+		name: 'root-relative-url',
+		setup(build) {
+			build.onResolve({ filter: /^\// }, (args) => {
+				if (args.kind !== 'url-token') {
+					return null
+				}
+
+				return {
+					path: args.path,
+					external: true
+				}
+			})
+		}
+	}
 }
 
 /**

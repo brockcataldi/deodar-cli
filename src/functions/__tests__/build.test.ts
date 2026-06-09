@@ -77,6 +77,44 @@ describe('build', () => {
 			expect(cssContent).toContain('color: red')
 		})
 
+		it('should compile SCSS with root-relative url() paths', async () => {
+			const blockDir = path.join(
+				projectDir,
+				'blocks',
+				'acf',
+				'url-block'
+			)
+			await createMockBlock(blockDir, 'url-block')
+
+			await fs.writeFile(
+				path.join(blockDir, 'url-block.scss'),
+				`.url-block {
+          background-image: url(/wp-content/themes/theme/assets/image.png);
+        }`,
+				'utf-8'
+			)
+
+			const config = {
+				cwd: projectDir,
+				externals: { jquery: 'jQuery' },
+				skip: []
+			}
+
+			await compileProject(projectDir, config, false)
+
+			const cssFile = path.join(
+				blockDir,
+				'build',
+				'url-block.build.css'
+			)
+			const cssContent = await fs.readFile(cssFile, 'utf-8')
+
+			expect(cssContent).toContain('.url-block')
+			expect(cssContent).toContain(
+				'url(/wp-content/themes/theme/assets/image.png)'
+			)
+		})
+
 		it('should compile JavaScript files', async () => {
 			// Create a test block with JS
 			const blockDir = path.join(
