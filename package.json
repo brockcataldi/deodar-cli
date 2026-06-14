@@ -57,7 +57,7 @@
 		"change-case": "^5.4.4",
 		"chokidar": "^4.0.3",
 		"commander": "^14.0.1",
-		"esbuild": "^0.25.10",
+		"esbuild": "^0.28.1",
 		"esbuild-sass-plugin": "^3.3.1",
 		"micromatch": "^4.0.8",
 		"mustache": "^4.2.0",
